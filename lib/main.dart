@@ -43,7 +43,6 @@ class _TemperatureHomeState extends State<TemperatureHome> {
   void _startSensor() {
     _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
       setState(() {
-        // Emulación de variación de temperatura
         double variation = (_random.nextDouble() * 4) - 2;
         _currentTemperature += variation;
 
@@ -56,6 +55,26 @@ class _TemperatureHomeState extends State<TemperatureHome> {
         );
       });
     });
+  }
+
+  Color _getBackgroundColor() {
+    if (_currentTemperature < 20) {
+      return Colors.green.shade200;
+    } else if (_currentTemperature < 30) {
+      return Colors.yellow.shade200;
+    } else {
+      return Colors.red.shade200;
+    }
+  }
+
+  Color _getTextColor() {
+    if (_currentTemperature < 20) {
+      return Colors.green.shade800;
+    } else if (_currentTemperature < 30) {
+      return Colors.orange.shade800;
+    } else {
+      return Colors.red.shade800;
+    }
   }
 
   @override
@@ -71,64 +90,71 @@ class _TemperatureHomeState extends State<TemperatureHome> {
         title: const Text('Registro de Temperatura'),
         centerTitle: true,
       ),
-      body: Column(
-        children: [
-          const SizedBox(height: 20),
+      body: AnimatedContainer(
+        duration: const Duration(milliseconds: 800),
+        color: _getBackgroundColor(),
+        child: Column(
+          children: [
+            const SizedBox(height: 20),
 
-          // Temperatura actual
-          Card(
-            margin: const EdgeInsets.all(16),
-            elevation: 4,
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                children: [
-                  const Text(
-                    'Temperatura Actual',
-                    style: TextStyle(fontSize: 20),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    '${_currentTemperature.toStringAsFixed(1)} °C',
-                    style: const TextStyle(
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.red,
+            // Tarjeta de temperatura actual
+            Card(
+              margin: const EdgeInsets.all(16),
+              elevation: 5,
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    const Text(
+                      'Temperatura Actual',
+                      style: TextStyle(fontSize: 20),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 10),
+                    Text(
+                      '${_currentTemperature.toStringAsFixed(1)} °C',
+                      style: TextStyle(
+                        fontSize: 36,
+                        fontWeight: FontWeight.bold,
+                        color: _getTextColor(),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
 
-          const Divider(),
+            const Divider(),
 
-          const Text(
-            'Historial de Mediciones',
-            style: TextStyle(fontSize: 18),
-          ),
-
-          const SizedBox(height: 10),
-
-          // Lista de registros
-          Expanded(
-            child: ListView.builder(
-              itemCount: _records.length,
-              itemBuilder: (context, index) {
-                final record = _records[index];
-                return ListTile(
-                  leading: const Icon(Icons.thermostat),
-                  title: Text(
-                    '${record.value.toStringAsFixed(1)} °C',
-                  ),
-                  subtitle: Text(
-                    record.time.toString(),
-                  ),
-                );
-              },
+            const Text(
+              'Historial de Mediciones',
+              style: TextStyle(fontSize: 18),
             ),
-          ),
-        ],
+
+            const SizedBox(height: 10),
+
+            // Historial
+            Expanded(
+              child: ListView.builder(
+                itemCount: _records.length,
+                itemBuilder: (context, index) {
+                  final record = _records[index];
+                  return ListTile(
+                    leading: Icon(
+                      Icons.thermostat,
+                      color: _getTextColor(),
+                    ),
+                    title: Text(
+                      '${record.value.toStringAsFixed(1)} °C',
+                    ),
+                    subtitle: Text(
+                      record.time.toString(),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
