@@ -133,7 +133,7 @@ class _TemperatureHomeState extends State<TemperatureHome> {
             ),
             const SizedBox(height: 10),
             Expanded(
-              child: ListView.builder(git
+              child: ListView.builder(
                 itemCount: _records.length,
                 itemBuilder: (context, index) {
                   final record = _records[index];
