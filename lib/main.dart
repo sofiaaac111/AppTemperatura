@@ -133,7 +133,7 @@ class _TemperatureHomeState extends State<TemperatureHome> {
             ),
             const SizedBox(height: 10),
             Expanded(
-              child: ListView.builder(
+              child: ListView.builder(git
                 itemCount: _records.length,
                 itemBuilder: (context, index) {
                   final record = _records[index];
@@ -157,6 +157,10 @@ class _TemperatureHomeState extends State<TemperatureHome> {
       ),
     );
   }
+}
+
+extension on Battery {
+  Future? get temperature => null;
 }
 
 class TemperatureRecord {
