@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:battery_plus/battery_plus.dart';
 
 void main() {
   runApp(const TemperatureApp());
@@ -13,7 +13,7 @@ class TemperatureApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Sensor de Temperatura',
+      title: 'Sensor de Temperatura REAL',
       theme: ThemeData(primarySwatch: Colors.blue),
       home: const TemperatureHome(),
     );
@@ -28,39 +28,45 @@ class TemperatureHome extends StatefulWidget {
 }
 
 class _TemperatureHomeState extends State<TemperatureHome> {
-  double _currentTemperature = 25.0;
-  final Random _random = Random();
+  final Battery _battery = Battery();
   Timer? _timer;
 
+  double _currentTemperature = 0.0;
   final List<TemperatureRecord> _records = [];
 
   @override
   void initState() {
     super.initState();
-    _startSensor();
+    _startReadingRealTemperature();
   }
 
-  void _startSensor() {
-    _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
-      setState(() {
-        double variation = (_random.nextDouble() * 4) - 2;
-        _currentTemperature += variation;
+  void _startReadingRealTemperature() {
+    _timer = Timer.periodic(const Duration(seconds: 5), (timer) async {
+      try {
+        // Temperatura real de la batería en décimas de grado
+        final temp = await _battery.temperature;
 
-        _records.insert(
-          0,
-          TemperatureRecord(
-            value: _currentTemperature,
-            time: DateTime.now(),
-          ),
-        );
-      });
+        setState(() {
+          _currentTemperature = temp;
+
+          _records.insert(
+            0,
+            TemperatureRecord(
+              value: _currentTemperature,
+              time: DateTime.now(),
+            ),
+          );
+        });
+      } catch (e) {
+        print("Error leyendo temperatura: $e");
+      }
     });
   }
 
   Color _getBackgroundColor() {
-    if (_currentTemperature < 20) {
+    if (_currentTemperature < 30) {
       return Colors.green.shade200;
-    } else if (_currentTemperature < 30) {
+    } else if (_currentTemperature < 40) {
       return Colors.yellow.shade200;
     } else {
       return Colors.red.shade200;
@@ -68,9 +74,9 @@ class _TemperatureHomeState extends State<TemperatureHome> {
   }
 
   Color _getTextColor() {
-    if (_currentTemperature < 20) {
+    if (_currentTemperature < 30) {
       return Colors.green.shade800;
-    } else if (_currentTemperature < 30) {
+    } else if (_currentTemperature < 40) {
       return Colors.orange.shade800;
     } else {
       return Colors.red.shade800;
@@ -87,7 +93,7 @@ class _TemperatureHomeState extends State<TemperatureHome> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Registro de Temperatura'),
+        title: const Text('Temperatura REAL del Dispositivo'),
         centerTitle: true,
       ),
       body: AnimatedContainer(
@@ -96,8 +102,6 @@ class _TemperatureHomeState extends State<TemperatureHome> {
         child: Column(
           children: [
             const SizedBox(height: 20),
-
-            // Tarjeta de temperatura actual
             Card(
               margin: const EdgeInsets.all(16),
               elevation: 5,
@@ -106,7 +110,7 @@ class _TemperatureHomeState extends State<TemperatureHome> {
                 child: Column(
                   children: [
                     const Text(
-                      'Temperatura Actual',
+                      'Temperatura de la Batería',
                       style: TextStyle(fontSize: 20),
                     ),
                     const SizedBox(height: 10),
@@ -122,17 +126,12 @@ class _TemperatureHomeState extends State<TemperatureHome> {
                 ),
               ),
             ),
-
             const Divider(),
-
             const Text(
               'Historial de Mediciones',
               style: TextStyle(fontSize: 18),
             ),
-
             const SizedBox(height: 10),
-
-            // Historial
             Expanded(
               child: ListView.builder(
                 itemCount: _records.length,
@@ -160,7 +159,6 @@ class _TemperatureHomeState extends State<TemperatureHome> {
   }
 }
 
-// Modelo para guardar registros
 class TemperatureRecord {
   final double value;
   final DateTime time;
